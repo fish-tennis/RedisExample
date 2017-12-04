@@ -173,7 +173,7 @@ Stream& operator >> ( Stream& stream, vector<T>& vec )
 template<class K, class V>
 Stream& operator << ( Stream& stream, map<K,V>& m )
 {
-	uint size = m.size();
+	uint size = (uint)m.size();
 	stream << size;
 	for ( typename map<K,V>::iterator it=m.begin(); it!=m.end(); ++it )
 	{

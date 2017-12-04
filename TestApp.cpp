@@ -16,7 +16,14 @@ TestApp::~TestApp()
 
 bool TestApp::OnInit( int argc, char **argv )
 {
-	m_RedisClientThread.Init("10.8.230.19", 6379);
+	string host = "127.0.0.1";
+	int port = 6379;
+	if (argc == 3)
+	{
+		host = argv[1];
+		port = atoi(argv[2]);
+	}
+	m_RedisClientThread.Init(host, port);
 	return true;
 }
 
@@ -43,70 +50,115 @@ void TestApp::OnCommand( const std::string& command )
 	}
 	else if (command == "test")
 	{
-		// 普通的set
+		// 普通的hset
 		RedisRequest* redisRequest = new RedisRequest();
 		redisRequest->AppendCommand("hset testhashtable key1 value1");
+		redisRequest->AppendCommand("hset testhashtable key2 value2"); // 可以多个命令放在一个RedisRequest里
 		m_RedisClientThread.PushRequest(redisRequest, [](RedisResult* redisResult) {
-			FmLog("hset testhashtable key1 value1 type=%d str=%s int=%llu", redisResult->GetReplys().front()->type, redisResult->GetReplys().front()->str, redisResult->GetReplys().front()->integer);
+			// GetReplys().size() = AppendCommand的命令数
+			if (redisResult->GetReplys().size() == 2)
+			{
+				for (list<redisReply*>::iterator it=redisResult->GetReplys().begin(); it!=redisResult->GetReplys().end(); ++it)
+				{
+					redisReply* reply = *it;
+					FmLog("hset testhashtable type=%d str=%s int=%llu", reply->type, reply->str, reply->integer);
+				}
+			}
+			else
+			{
+				FmLog("hset testhashtable key1 value1 Error");
+			}
 		});
 
-		// set 二进制数据
+		// hset 二进制数据
 		TestObject testObj;
-		testObj.m_DeckIndex = 123;
-		testObj.m_DeckName = "TestDeckName";
-		testObj.m_HeroCardId = 1104;
-		testObj.m_MainCards[101] = 2;
-		testObj.m_MainCards[203] = 3;
+		testObj.m_Int = 123;
+		testObj.m_Name = "TestName";
+		testObj.m_Map[101] = 2;
+		testObj.m_Map[203] = 3;
 		redisRequest = new RedisRequest();
 		RedisCommand* command = redisRequest->AppendCommand("hset testhashtable binaryKey");
 		command->m_BinaryData << testObj;
 		m_RedisClientThread.PushRequest(redisRequest, [](RedisResult* redisResult) {
-			FmLog("hset testhashtable binaryKey type=%d str=%s int=%llu", redisResult->GetReplys().front()->type, redisResult->GetReplys().front()->str, redisResult->GetReplys().front()->integer);
+			if (!redisResult->GetReplys().empty())
+			{
+				FmLog("hset testhashtable binaryKey type=%d str=%s int=%llu", redisResult->GetReplys().front()->type, redisResult->GetReplys().front()->str, redisResult->GetReplys().front()->integer);
+			}
+			else
+			{
+				FmLog("hset testhashtable binaryKey Error");
+			}
 		});
 
-		// 普通的get
+		// 普通的hget
 		redisRequest = new RedisRequest();
 		redisRequest->AppendCommand("hget testhashtable key1");
 		m_RedisClientThread.PushRequest(redisRequest, [](RedisResult* redisResult) {
-			FmLog("hget testhashtable key1 type=%d str=%s int=%llu", redisResult->GetReplys().front()->type, redisResult->GetReplys().front()->str, redisResult->GetReplys().front()->integer);
+			if (!redisResult->GetReplys().empty())
+			{
+				FmLog("hget testhashtable key1 type=%d str=%s int=%llu", redisResult->GetReplys().front()->type, redisResult->GetReplys().front()->str, redisResult->GetReplys().front()->integer);
+			}
+			else
+			{
+				FmLog("hset testhashtable key1 Error");
+			}
 		});
 
-		// get二进制数据
+		// hget二进制数据
 		uint64 callbackData = 1357911;
 		redisRequest = new RedisRequest();
 		redisRequest->AppendCommand("hget testhashtable binaryKey");
 		redisRequest->GetCallbackArgs() << callbackData;
 		m_RedisClientThread.PushRequest(redisRequest, [](RedisResult* redisResult) {
-			FmLog("hget testhashtable binaryKey type=%d str=%s int=%llu", redisResult->GetReplys().front()->type, redisResult->GetReplys().front()->str, redisResult->GetReplys().front()->integer);
-			TestObject newTestObj;
-			MemStream stream((uint8*)redisResult->GetReplys().front()->str, (size_t)redisResult->GetReplys().front()->len);
-			stream >> newTestObj;
 			uint64 retCallbackData = 0;
 			redisResult->GetCallbackArgs() >> retCallbackData;
-			FmLog("newTestObj DeckIndex=%d DeckName=%s HeroCardId=%d MapSize=%d retCallbackData=%llu",
-				newTestObj.m_DeckIndex, newTestObj.m_DeckName.c_str(), newTestObj.m_HeroCardId, (int)newTestObj.m_MainCards.size(), retCallbackData);
+			if (!redisResult->GetReplys().empty())
+			{
+				FmLog("hget testhashtable binaryKey type=%d str=%s int=%llu", redisResult->GetReplys().front()->type, redisResult->GetReplys().front()->str, redisResult->GetReplys().front()->integer);
+				TestObject newTestObj;
+				MemStream stream((uint8*)redisResult->GetReplys().front()->str, (size_t)redisResult->GetReplys().front()->len);
+				stream >> newTestObj;
+				FmLog("newTestObj int=%d Name=%s MapSize=%d retCallbackData=%llu",
+					newTestObj.m_Int, newTestObj.m_Name.c_str(), (int)newTestObj.m_Map.size(), retCallbackData);
+			}
+			else
+			{
+				FmLog("hget testhashtable binaryKey Error");
+			}
 		});
 	}
-	// hash和list共同维护一份数据
-	// list用来控制hash里面的key的数量,删除旧的key
-	else if (command == "hashlist")
-	{
-		char strCmd[256] = {};
-		//for ( int i=0; i<100; ++i )
-		//{
-		//	uint64 key = i+1;
-		//	RedisRequest* redisRequest = new RedisRequest();
-		//	sprintf(strCmd, "hset testhash %llu %d", key, 100+i+1);
-		//	redisRequest->AppendCommand(strCmd);
-		//	sprintf(strCmd, "lpush testlist %llu", key);
-		//	redisRequest->AppendCommand(strCmd);
-		//	redisRequest->GetCallbackArgs() << key;
-		//	m_RedisClientThread.PushRequest(redisRequest, [](RedisResult* redisResult) {
-		//		//FmLog("hset testhashtable key1 value1 type=%d str=%s int=%llu", redisResult->GetReplys().front()->type, redisResult->GetReplys().front()->str, redisResult->GetReplys().front()->integer);
-		//	});
-		//}
 
-		static const int maxHashSize = 80;
+	// hashlistinit和hashlistcheck模拟了一个实际项目中的需求
+	// 在hash表里缓存一些临时数据,并定时对hash表进行清理(删除最早缓存的数据)
+	// 通过一个list来记录插入到hash表中的key的顺序
+
+	// hashlistinit用来创建一个有110个key的hash表
+	else if (command == "hashlistinit")
+	{
+		RedisRequest* initRequest = new RedisRequest();
+		initRequest->AppendCommand("del testhash");
+		initRequest->AppendCommand("del testlist");
+		m_RedisClientThread.PushRequest(initRequest, nullptr);
+
+		char strCmd[256] = {};
+		for ( int i=0; i<110; ++i )
+		{
+			uint64 key = i+1;
+			RedisRequest* redisRequest = new RedisRequest();
+			sprintf(strCmd, "hset testhash %llu %d", key, 100+i+1);
+			redisRequest->AppendCommand(strCmd);
+			sprintf(strCmd, "lpush testlist %llu", key);
+			redisRequest->AppendCommand(strCmd);
+			m_RedisClientThread.PushRequest(redisRequest, [](RedisResult* redisResult) {
+				//FmLog("hset testhashtable key1 value1 type=%d str=%s int=%llu", redisResult->GetReplys().front()->type, redisResult->GetReplys().front()->str, redisResult->GetReplys().front()->integer);
+			});
+		}
+	}
+	// hashlistcheck用来检查hash表是否超过大小并删除旧key
+	else if (command == "hashlistcheck")
+	{
+		static const int maxHashSize = 100;
+		char strCmd[256] = {};
 		RedisRequest* redisRequest = new RedisRequest();
 		sprintf(strCmd, "lrange testlist %d -1", maxHashSize);
 		redisRequest->AppendCommand(strCmd);
@@ -116,7 +168,7 @@ void TestApp::OnCommand( const std::string& command )
 				redisReply* reply = redisResult->GetReplys().front();
 				if (reply->elements > 0)
 				{
-					// 删除hash表中多的项
+					// 批量删除hash表中多的项
 					char delCmd[1024] = {};
 					sprintf(delCmd, "hdel testhash");
 					for (size_t i = 0; i < reply->elements; ++i)
@@ -132,7 +184,7 @@ void TestApp::OnCommand( const std::string& command )
 					});
 					// list清除
 					delRequest = new RedisRequest();
-					sprintf(delCmd, "ltrim testlist 0 %d", maxHashSize-1);
+					sprintf(delCmd, "ltrim testlist 0 %d", maxHashSize-1); // 只保留[0,maxHashSize)的key
 					delRequest->AppendCommand(delCmd);
 					TestApp::GetInstance().m_RedisClientThread.PushRequest(delRequest, [](RedisResult* delResult) {
 						FmLog("ltrim testlist type=%d str=%s int=%llu", delResult->GetReplys().front()->type, delResult->GetReplys().front()->str, delResult->GetReplys().front()->integer);

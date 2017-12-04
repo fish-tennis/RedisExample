@@ -1,5 +1,6 @@
 #include "FmBaseApp.h"
 #include "FmLog.h"
+#include "FmSysUtil.h"
 
 #if FM_PLATFORM == FM_PLATFORM_LINUX
 #include <signal.h>
@@ -53,11 +54,7 @@ bool BaseApp::Run()
 		{
 			break;
 		}
-#if FM_PLATFORM == FM_PLATFORM_WIN32
-		::Sleep(1);
-#else
-		usleep(1 * 1000);
-#endif
+		SysUtil::Sleep(1);
 	}
 
 	return true;
@@ -88,11 +85,7 @@ void BaseApp::InputCommandThread()
 			}
 			m_Commands->write(command);
 		}
-#if FM_PLATFORM == FM_PLATFORM_WIN32
-		::Sleep(100);
-#else
-		usleep(100 * 1000);
-#endif
+		SysUtil::Sleep(100);
 	}
 	FmLog("InputCommandThread End");
 }

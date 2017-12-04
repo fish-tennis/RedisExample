@@ -1,5 +1,6 @@
 #include "FmRedisClientThread.h"
 #include <Util/FmLog.h>
+#include "Util/FmSysUtil.h"
 
 NS_FM_BEGIN
 
@@ -71,11 +72,7 @@ void RedisClientThread::Run()
 		}
 		else
 		{
-#if FM_PLATFORM == FM_PLATFORM_WIN32
-			::Sleep(1000);
-#else
-			usleep(1000 * 1000);
-#endif
+			SysUtil::Sleep(1000);
 		}
 	}
 	FmLog("Connect Phase End");
@@ -96,11 +93,7 @@ void RedisClientThread::Run()
 			else
 			{
 				// reconnect after sleep
-#if FM_PLATFORM == FM_PLATFORM_WIN32
-				::Sleep(1000);
-#else
-				usleep(1000 * 1000);
-#endif
+				SysUtil::Sleep(1000);
 				continue;
 			}
 		}
@@ -131,11 +124,7 @@ void RedisClientThread::Run()
 		}
 		else
 		{
-#if FM_PLATFORM == FM_PLATFORM_WIN32
-			::Sleep(1);
-#else
-			usleep(1 * 1000);
-#endif
+			SysUtil::Sleep(1);
 		}
 	}
 	FmLog("Command Phase End");
@@ -247,7 +236,8 @@ bool RedisClientThread::OnProcessResult(RedisResult* redisResult)
 		return false;
 	}
 	RedisResultCallback callback = it->second;
-	callback(redisResult);
+	if(callback)
+		callback(redisResult);
 	m_RedisResultCallbacks.erase(redisResult->GetCallbackSerialId());
 	return true;
 }
