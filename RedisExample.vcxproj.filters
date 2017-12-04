@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Redis">
+      <UniqueIdentifier>{7397b70f-75c8-462a-9cb5-db6da62d9163}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Redis\hiredis">
+      <UniqueIdentifier>{66614a68-0e21-45ed-be50-1c7341975472}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{2da3d159-ff1c-4bd0-ad81-d42aa94502e1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TestApp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TestObject.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Redis\hiredis\async.c">
+      <Filter>Redis\hiredis</Filter>
+    </ClCompile>
+    <ClCompile Include="Redis\hiredis\dict.c">
+      <Filter>Redis\hiredis</Filter>
+    </ClCompile>
+    <ClCompile Include="Redis\hiredis\hiredis.c">
+      <Filter>Redis\hiredis</Filter>
+    </ClCompile>
+    <ClCompile Include="Redis\hiredis\net.c">
+      <Filter>Redis\hiredis</Filter>
+    </ClCompile>
+    <ClCompile Include="Redis\hiredis\read.c">
+      <Filter>Redis\hiredis</Filter>
+    </ClCompile>
+    <ClCompile Include="Redis\hiredis\sds.c">
+      <Filter>Redis\hiredis</Filter>
+    </ClCompile>
+    <ClCompile Include="Redis\FmRedisClient.cpp">
+      <Filter>Redis</Filter>
+    </ClCompile>
+    <ClCompile Include="Redis\FmRedisData.cpp">
+      <Filter>Redis</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\FmStream.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\FmBaseApp.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\FmSysUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Redis\FmRedisClientThread.cpp">
+      <Filter>Redis</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TestApp.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TestObject.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\hiredis\async.h">
+      <Filter>Redis\hiredis</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\hiredis\dict.h">
+      <Filter>Redis\hiredis</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\hiredis\fmacros.h">
+      <Filter>Redis\hiredis</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\hiredis\hiredis.h">
+      <Filter>Redis\hiredis</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\hiredis\net.h">
+      <Filter>Redis\hiredis</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\hiredis\read.h">
+      <Filter>Redis\hiredis</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\hiredis\sds.h">
+      <Filter>Redis\hiredis</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\hiredis\sdsalloc.h">
+      <Filter>Redis\hiredis</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\hiredis\win32.h">
+      <Filter>Redis\hiredis</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\FmRedisClient.h">
+      <Filter>Redis</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\FmRedisData.h">
+      <Filter>Redis</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\FmConfig.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\FmPlatform.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\FmStream.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\FmBaseApp.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\FmLog.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\FmSysUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Redis\FmRedisClientThread.h">
+      <Filter>Redis</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\ProducerConsumerQueue.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
