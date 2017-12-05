@@ -146,4 +146,3 @@ extern "C" {
 
 #define FmUtil_EXPORTS
 
-#define NOT_USE_BOOST // 如果使用boost库,则注释该行

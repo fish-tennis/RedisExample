@@ -18,7 +18,6 @@ CPPFLAGS += -MMD
 
 #以下部分无需修改
 SOURCE := $(shell find . -name "*.cpp" -printf "%p ")
-SOURCE += $(shell find ./../Public/Card -name "*.cpp" -printf "%p ")
 OBJS := $(patsubst %.$(PS),%.o,$(SOURCE))
 DEPS := $(patsubst %.o,%.d,$(OBJS))
 MISSING_DEPS := $(filter-out $(wildcard $(DEPS)),$(DEPS))

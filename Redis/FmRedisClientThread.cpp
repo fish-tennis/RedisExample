@@ -179,7 +179,7 @@ bool RedisClientThread::OnProcessRequest(RedisRequest* redisRequest, bool& isDis
 			|| (reply != nullptr && reply->type == REDIS_REPLY_ERROR)
 			)
 		{
-#ifdef _DEBUG
+			FmLog("redisGetReply Error:error:%s", m_RedisClient->GetRedisContext()->errstr);
 			if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
 			{
 				if (reply == nullptr)
@@ -191,7 +191,6 @@ bool RedisClientThread::OnProcessRequest(RedisRequest* redisRequest, bool& isDis
 					FmLog("redisCommand Error:%s Cmd:%s", reply->str, (*it)->m_Command.c_str());
 				}	
 			}
-#endif
 			hasError = true;
 			// ÅÐ¶Ï¶ÏÏß
 			if (reply == nullptr && m_RedisClient->GetRedisContext()->err == REDIS_ERR_IO)

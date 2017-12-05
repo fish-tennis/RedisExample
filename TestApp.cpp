@@ -169,16 +169,17 @@ void TestApp::OnCommand( const std::string& command )
 				if (reply->elements > 0)
 				{
 					// 批量删除hash表中多的项
-					char delCmd[1024] = {};
-					sprintf(delCmd, "hdel testhash");
+					string delCmd = "hdel testhash";
 					for (size_t i = 0; i < reply->elements; ++i)
 					{
 						redisReply* elementReply = reply->element[i];
-						sprintf(delCmd, " %s %s", delCmd, elementReply->str);
+						delCmd += " ";
+						delCmd += elementReply->str;
 						FmLog("lrange %d type=%d str=%s int=%llu", (int)i, elementReply->type, elementReply->str, elementReply->integer);
 					}
 					RedisRequest* delRequest = new RedisRequest();
 					delRequest->AppendCommand(delCmd);
+					FmLog("delCmd:%s", delCmd.c_str());
 					TestApp::GetInstance().m_RedisClientThread.PushRequest(delRequest, [](RedisResult* delResult) {
 						if (!delResult->GetReplys().empty())
 						{
@@ -191,8 +192,9 @@ void TestApp::OnCommand( const std::string& command )
 					});
 					// list清除
 					delRequest = new RedisRequest();
-					sprintf(delCmd, "ltrim testlist 0 %d", maxHashSize-1); // 只保留[0,maxHashSize)的key
-					delRequest->AppendCommand(delCmd);
+					char trimCmd[256] = {};
+					sprintf(trimCmd, "ltrim testlist 0 %d", maxHashSize-1); // 只保留[0,maxHashSize)的key
+					delRequest->AppendCommand(trimCmd);
 					TestApp::GetInstance().m_RedisClientThread.PushRequest(delRequest, [](RedisResult* delResult) {
 						if (!delResult->GetReplys().empty())
 						{
