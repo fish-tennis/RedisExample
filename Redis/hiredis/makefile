@@ -1,7 +1,7 @@
 ######################################
-# libFmScript
+# libhiredis
 ######################################
-#目标（可执行文档）名称，库（譬如stdcx,iostr,mysql等），头文件路径
+#目标（可执行文档）名称，库，头文件路径
 DESTINATION := libhiredis.a
 LIBS := 
 INCLUDES := ./

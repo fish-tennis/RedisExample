@@ -180,14 +180,28 @@ void TestApp::OnCommand( const std::string& command )
 					RedisRequest* delRequest = new RedisRequest();
 					delRequest->AppendCommand(delCmd);
 					TestApp::GetInstance().m_RedisClientThread.PushRequest(delRequest, [](RedisResult* delResult) {
-						FmLog("hdel testhash type=%d str=%s int=%llu", delResult->GetReplys().front()->type, delResult->GetReplys().front()->str, delResult->GetReplys().front()->integer);
+						if (!delResult->GetReplys().empty())
+						{
+							FmLog("hdel testhash type=%d str=%s int=%llu", delResult->GetReplys().front()->type, delResult->GetReplys().front()->str, delResult->GetReplys().front()->integer);
+						}
+						else
+						{
+							FmLog("hdel testhash Error");
+						}
 					});
 					// list清除
 					delRequest = new RedisRequest();
 					sprintf(delCmd, "ltrim testlist 0 %d", maxHashSize-1); // 只保留[0,maxHashSize)的key
 					delRequest->AppendCommand(delCmd);
 					TestApp::GetInstance().m_RedisClientThread.PushRequest(delRequest, [](RedisResult* delResult) {
-						FmLog("ltrim testlist type=%d str=%s int=%llu", delResult->GetReplys().front()->type, delResult->GetReplys().front()->str, delResult->GetReplys().front()->integer);
+						if (!delResult->GetReplys().empty())
+						{
+							FmLog("ltrim testlist type=%d str=%s int=%llu", delResult->GetReplys().front()->type, delResult->GetReplys().front()->str, delResult->GetReplys().front()->integer);
+						}
+						else
+						{
+							FmLog("ltrim testlist Error");
+						}
 					});
 				}
 			}
