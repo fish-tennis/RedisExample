@@ -18,13 +18,13 @@ RedisExample.sln
 # compile on linux
 ------------------------------------------
 先编译hiredis库:<br>
-cd RedisExample/Redis/hiredis
-make
+cd RedisExample/Redis/hiredis<br>
+make<br>
 
 在编译RedisExample:<br>
-cd RedisExample
-make
+cd RedisExample<br>
+make<br>
 
-运行:
-RedisExample redisIP redisPort
-输入测试命令
+运行:<br>
+RedisExample redisIP redisPort<br>
+输入测试命令<br>
