@@ -1,24 +1,23 @@
 ######################################
-# RedisExample
+# libFmScript
 ######################################
-DESTINATION := RedisExample
+#目标（可执行文档）名称，库（譬如stdcx,iostr,mysql等），头文件路径
+DESTINATION := libhiredis.a
 LIBS := 
-
 INCLUDES := ./
-LDFLAGS := -L./Redis/hiredis -lm -ldl -lrt -lhiredis
+LDFLAGS :=-lm -ldl
 
+AR = ar
 RM := rm -f
 #C,CC或CPP文件的后缀
-PS=cpp
+PS=c
 # GNU Make的隐含变量定义
-CC=g++
-CPPFLAGS = -g -Wall -O0 -DNDEBUG -std=c++11
-CPPFLAGS += $(addprefix -I,$(INCLUDES))
-CPPFLAGS += -MMD
+CC=gcc
+CFLAGS = -g -Wall -O3
+CFLAGS += $(addprefix -I,$(INCLUDES))
 
 #以下部分无需修改
-SOURCE := $(shell find . -name "*.cpp" -printf "%p ")
-SOURCE += $(shell find ./../Public/Card -name "*.cpp" -printf "%p ")
+SOURCE := $(shell find . -name "*.c" -printf "%p ")
 OBJS := $(patsubst %.$(PS),%.o,$(SOURCE))
 DEPS := $(patsubst %.o,%.d,$(OBJS))
 MISSING_DEPS := $(filter-out $(wildcard $(DEPS)),$(DEPS))
@@ -29,7 +28,7 @@ MISSING_DEPS_SOURCES := $(wildcard $(patsubst %.d,%.$(PS),$(MISSING_DEPS)))
 all : $(DESTINATION)
 
 deps : $(DEPS)
-	$(CC) -MM -MMD $(SOURCE)
+	$(CC) -MM $(CFLAGS) $(SOURCE)
 
 
 objs : $(OBJS)
@@ -49,5 +48,6 @@ endif
 -include $(DEPS)
 
 $(DESTINATION) : $(OBJS)
-	$(CC) -o $(DESTINATION) $(OBJS) $(LDFLAGS)
-	#mv $(DESTINATION) ./../Bin/$(DESTINATION)/$(DESTINATION)
+	$(AR) cqs $(DESTINATION) $(OBJS)
+	#mv $(DESTINATION) ./../Lib/$(DESTINATION)
+#结束
