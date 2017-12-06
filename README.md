@@ -28,3 +28,4 @@ make<br>
 运行:<br>
 RedisExample redisIP redisPort<br>
 输入测试命令<br>
+TestApp.cpp中查看测试命令
