@@ -16,12 +16,16 @@ protected:
 	redisContext* m_RedisContext = nullptr;
 	string m_HostIP;
 	int m_HostPort = 6379;
+	string m_Password;
+	int m_DbIndex = 0;
 public:
-	RedisClient(const string& ip, int port);
+	RedisClient(const string& ip, int port, const string& password, int dbIndex);
 	~RedisClient();
 
 	const string GetHostIP() { return m_HostIP; }
 	int GetHostPort() { return m_HostPort; }
+	int GetDbIndex() { return m_DbIndex; }
+
 	redisContext* GetRedisContext() { return m_RedisContext; }
 
 	bool Connect();
@@ -29,6 +33,10 @@ public:
 	void Shutdown();
 
 	void Ping();
+
+	bool Auth();
+
+	bool SelectDbIndex();
 };
 
 NS_FM_END

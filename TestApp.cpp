@@ -14,16 +14,30 @@ TestApp::~TestApp()
 
 }
 
+// testapp 127.0.0.1 6379 password dbindex
 bool TestApp::OnInit( int argc, char **argv )
 {
 	string host = "127.0.0.1";
 	int port = 6379;
-	if (argc == 3)
+	string password = "";
+	int dbIndex = 0;
+	if (argc > 1)
 	{
 		host = argv[1];
+	}
+	if (argc > 2)
+	{
 		port = atoi(argv[2]);
 	}
-	m_RedisClientThread.Init(host, port);
+	if (argc > 3)
+	{
+		password = argv[3];
+	}
+	if (argc > 4)
+	{
+		port = atoi(argv[4]);
+	}
+	m_RedisClientThread.Init(host, port, password, dbIndex);
 	return true;
 }
 

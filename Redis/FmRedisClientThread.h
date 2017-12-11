@@ -32,7 +32,7 @@ public:
 	RedisClientThread();
 	~RedisClientThread();
 
-	bool Init(const string& ip, int port);
+	bool Init(const string& ip, int port, const string& password, int dbIndex);
 
 	void Shutdown();
 

@@ -16,9 +16,9 @@ RedisClientThread::~RedisClientThread()
 	delete m_ResultQueue;
 }
 
-bool RedisClientThread::Init(const string& ip, int port)
+bool RedisClientThread::Init(const string& ip, int port, const string& password, int dbIndex)
 {
-	m_RedisClient = new RedisClient(ip, port);
+	m_RedisClient = new RedisClient(ip, port, password, dbIndex);
 	m_IsRunning = true;
 	m_Thread = new std::thread(std::bind(&RedisClientThread::Run, this));
 	return true;
@@ -47,7 +47,8 @@ bool RedisClientThread::PushRequest(RedisRequest* redisRequest, RedisResultCallb
 		DeleteRequest(redisRequest);
 		return false;
 	}
-	m_RedisResultCallbacks[m_CallbackSerialId] = resultCallback;
+	if(resultCallback != nullptr )
+		m_RedisResultCallbacks[m_CallbackSerialId] = resultCallback;
 	return true;
 }
 
@@ -72,12 +73,13 @@ void RedisClientThread::Run()
 		}
 		else
 		{
-			SysUtil::Sleep(1000);
+			SysUtil::Sleep(1000); // reconnect after sleep
 		}
 	}
 	FmLog("Connect Phase End");
 
 	FmLog("Command Phase Begin");
+	uint64 lastPingMS = SysUtil::GetMSTime();
 	bool isReconnecting = false;
 	RedisRequest* redisRequest = nullptr;
 	while (m_IsRunning)
@@ -92,8 +94,7 @@ void RedisClientThread::Run()
 			}
 			else
 			{
-				// reconnect after sleep
-				SysUtil::Sleep(1000);
+				SysUtil::Sleep(1000); // reconnect after sleep
 				continue;
 			}
 		}
@@ -121,10 +122,15 @@ void RedisClientThread::Run()
 #endif
 				continue;
 			}
+			lastPingMS = SysUtil::GetMSTime();
 		}
 		else
 		{
-			SysUtil::Sleep(1);
+			// 1分钟没执行命令 则自己ping一下
+			if (SysUtil::GetMSTime() - lastPingMS > 1000 * 60)
+				m_RedisClient->Ping();
+			else
+				SysUtil::Sleep(1);
 		}
 	}
 	FmLog("Command Phase End");
@@ -161,46 +167,35 @@ bool RedisClientThread::OnProcessRequest(RedisRequest* redisRequest, bool& isDis
 		}
 	}
 
+	RedisResult* result = new RedisResult();
+	result->SetCallbackSerialId(redisRequest->GetSerialId());
+	result->GetCallbackArgs().SetBuffer(redisRequest->GetCallbackArgs().GetBuffer());
 	// 错误处理
 	if (hasError)
 	{
 		// cleanup all append commands
 		redisCleanupAppendCommands(m_RedisClient->GetRedisContext());
-		return false;
 	}
-
-	RedisResult* result = new RedisResult();
-	result->SetCallbackSerialId(redisRequest->GetSerialId());
-	result->GetCallbackArgs().SetBuffer(redisRequest->GetCallbackArgs().GetBuffer());
-	for (list<RedisCommand*>::iterator it = redisRequest->GetCommands().begin(); it != redisRequest->GetCommands().end(); ++it)
+	else
 	{
-		redisReply* reply = nullptr;
-		if (redisGetReply(m_RedisClient->GetRedisContext(), (void**)(&reply)) == REDIS_ERR
-			|| (reply != nullptr && reply->type == REDIS_REPLY_ERROR)
-			)
+		for (list<RedisCommand*>::iterator it = redisRequest->GetCommands().begin(); it != redisRequest->GetCommands().end(); ++it)
 		{
-			FmLog("redisGetReply Error:error:%s", m_RedisClient->GetRedisContext()->errstr);
-			if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
+			redisReply* reply = nullptr;
+			if (redisGetReply(m_RedisClient->GetRedisContext(), (void**)(&reply)) == REDIS_ERR
+				|| (reply != nullptr && reply->type == REDIS_REPLY_ERROR)
+				)
 			{
-				if (reply == nullptr)
+				hasError = true;
+				// 判断断线
+				if (reply == nullptr && m_RedisClient->GetRedisContext()->err == REDIS_ERR_IO)
 				{
-					FmLog("redisCommand Error:reply == nullptr Cmd:%s", (*it)->m_Command.c_str());
+					isDisconnected = true;
 				}
-				else
-				{
-					FmLog("redisCommand Error:%s Cmd:%s", reply->str, (*it)->m_Command.c_str());
-				}	
+				break; // 如果有多个命令执行,但是只有部分执行成功,怎么处理?
 			}
-			hasError = true;
-			// 判断断线
-			if (reply == nullptr && m_RedisClient->GetRedisContext()->err == REDIS_ERR_IO)
-			{
-				isDisconnected = true;
-			}
-			break; // 如果有多个命令执行,但是只有部分执行成功,怎么处理?
+			if (reply != nullptr)
+				result->GetReplys().push_back(reply);
 		}
-		if(reply != nullptr)
-			result->GetReplys().push_back(reply);
 	}
 
 	while (!m_ResultQueue->write(result))
