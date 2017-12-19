@@ -126,11 +126,14 @@ void RedisClientThread::Run()
 		}
 		else
 		{
-			// 1分钟没执行命令 则自己ping一下
-			if (SysUtil::GetMSTime() - lastPingMS > 1000 * 60)
+			// 20秒没执行命令 则自己ping一下
+			uint64 msTime = SysUtil::GetMSTime();
+			if (msTime - lastPingMS > 1000 * 20)
+			{
 				m_RedisClient->Ping();
-			else
-				SysUtil::Sleep(1);
+				lastPingMS = msTime;
+			}
+			SysUtil::Sleep(1);
 		}
 	}
 	FmLog("Command Phase End");
